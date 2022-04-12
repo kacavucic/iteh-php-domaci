@@ -41,6 +41,7 @@ class Appointment
             return $appointments;
         }
     }
+
     public static function add(Appointment $appointment, mysqli $conn)
     {
         $location_id = $appointment->location->id;
@@ -49,6 +50,12 @@ class Appointment
         $query = "INSERT INTO appointment(date_time,dog_id,location_id) 
         VALUES('$date_time',$dog_id, $location_id)";
 
+        return $conn->query($query);
+    }
+
+    public function deleteById(mysqli $conn)
+    {
+        $query = "DELETE FROM appointment WHERE appointment_id=$this->id";
         return $conn->query($query);
     }
 }

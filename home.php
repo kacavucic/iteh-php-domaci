@@ -351,6 +351,27 @@ if (!isset($_SESSION['user_id'])) {
         });
     })
 
+    $(".delete-appointment").click(function () {
+        var id = $(this).val();
+        console.log("Deleting appointment with ID: " + id);
+
+        request = $.ajax({
+            url: 'handler/delete.php',
+            type: 'post',
+            data: {'id': id}
+        });
+
+        request.done(function (response) {
+            if (response == "Success") {
+                console.log('Deleted');
+                location.reload();
+            } else {
+                console.log("Appointment not deleted " + response);
+            }
+            console.log(response);
+        });
+    });
+
     function searchAppointmentByProperty() {
         let selectedProperty = $("#search-appointments-dropdown option:selected").text();
         input = document.getElementById("searchAppointmentBar");
