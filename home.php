@@ -67,6 +67,21 @@ if (!isset($_SESSION['user_id'])) {
             <div class="row">
                 <div class="card col-xs-12 table-container">
                     <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-xs-12 col-md-2 ">
+                                <select class="custom-select" id="search-appointments-dropdown">
+                                    <option value="ID">ID</option>
+                                    <option value="FirstName">Owner</option>
+                                    <option value="LastName">Location</option>
+                                </select>
+                            </div>
+                            <div class="col-xs-12 col-md-6 ">
+                                <input type="text" id="searchAppointmentBar"
+                                       placeholder="Search for appointments..." class="form-control search mr-2"
+                                       aria-label="Text input with dropdown button"
+                                       onkeyup="searchAppointmentByProperty()"/>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-xs-12 col-md-12">
                                 <table class="table table-responsive" id="appointmentTable">
@@ -156,6 +171,39 @@ if (!isset($_SESSION['user_id'])) {
 
         $('.dataTables_length').addClass('bs-select');
     });
+
+    function searchAppointmentByProperty() {
+        let selectedProperty = $("#search-appointments-dropdown option:selected").text();
+        input = document.getElementById("searchAppointmentBar");
+        filter = input.value.toUpperCase();
+
+        let table = document.getElementById("appointmentTable");
+        let tr = table.getElementsByTagName("tr");
+
+        for (i = 0; i < tr.length; i++) {
+            switch (selectedProperty) {
+                case "ID":
+                    td = tr[i].getElementsByTagName("td")[0];
+                    break;
+                case "Owner":
+                    td = tr[i].getElementsByTagName("td")[2];
+
+                    break;
+                case "Location":
+                    td = tr[i].getElementsByTagName("td")[4];
+                    break;
+                default:
+            }
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
 </script>
 </body>
 </html>
