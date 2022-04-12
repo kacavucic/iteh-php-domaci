@@ -2,7 +2,7 @@
 require "dbBroker.php";
 require "model/location.php";
 require "model/owner.php";
-require "model/dog.php";
+require "fillDogs.php";
 require "model/appointment.php";
 
 session_start();
@@ -144,6 +144,137 @@ if (!isset($_SESSION['user_id'])) {
         </div>
     </div>
 </div>
+<!-- MODAL ADD -->
+<div class="modal fade" id="addModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Make an Appointment</h3>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="container add-form">
+                    <form action="#" method="post" id="addForm">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="">Location:</label>
+                                    <select name="location" id="location" class="form-control">
+                                        <option value="" selected disabled>--- Choose a location ---</option>
+                                        <?php
+                                        $locations = Location::getAll($conn);
+                                        if ($locations != null) {
+                                            foreach ($locations as $location) {
+                                                echo "<option value=\"" . $location->id . "\">" . $location->city . ", " . $location->address . "</option>";
+                                            }
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="">Owner:</label>
+                                    <select name="owner" id="owner" class="form-control" onchange='fillOwnerDogs()'>
+                                        <option value="" selected disabled>--- Choose an owner ---</option>
+                                        <?php
+                                        $owners = Owner::getAll($conn);
+                                        if ($owners != null) {
+                                            foreach ($owners as $owner) {
+                                                echo "<option value=\"" . $owner->id . "\">" . $owner->firstname . " " . $owner->lastname . "</option>";
+                                            }
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="">Dog:</label>
+                                    <select name="dog" id="dog" class="form-control">
+                                        <option value="" selected disabled>--- Choose a dog ---</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="">Date and Time</label>
+                                    <input type="datetime-local" id="appointmentTime" name="appointmentTime"
+                                           class="form-control"/>
+                                </div>
+                                <div class="form-group">
+                                    <button id="btnAdd" type="submit" class="btn btn-primary">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- MODAL EDIT -->
+<div class="modal fade" id="editModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Appointment</h3>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="container edit-form">
+                    <form action="#" method="post" id="editForm">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="">ID</label>
+                                    <input id="idEdit" type="text" name="idEdit" class="form-control" readonly/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="">Location:</label>
+                                    <select name="locationEdit" id="locationEdit" class="form-control">
+                                        <option value="" selected disabled>--- Choose a location ---</option>
+                                        <?php
+                                        $locations = Location::getAll($conn);
+                                        if ($locations != null) {
+                                            foreach ($locations as $location) {
+                                                echo "<option value=\"" . $location->id . "\">" . $location->city . ", " . $location->address . "</option>";
+                                            }
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="">Owner:</label>
+                                    <select name="ownerEdit" id="ownerEdit" class="form-control"
+                                            onchange='fillOwnerDogsEdit()'>
+                                        <option value="" selected disabled>--- Choose an owner ---</option>
+                                        <?php
+                                        $owners = Owner::getAll($conn);
+                                        if ($owners != null) {
+                                            foreach ($owners as $owner) {
+                                                echo "<option value=\"" . $owner->id . "\">" . $owner->firstname . " " . $owner->lastname . "</option>";
+                                            }
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="">Dog:</label>
+                                    <select name="dogEdit" id="dogEdit" class="form-control">
+                                        <option value="" disabled>--- Choose a dog ---</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="">Date and Time</label>
+                                    <input type="datetime-local" id="appointmentTimeEdit" name="appointmentTimeEdit"
+                                           class="form-control"/>
+                                </div>
+                                <div class="form-group">
+                                    <button id="btnEdit" type="submit" class="btn btn-primary">Edit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <footer class="mt-auto">
     <div class="row">
         <div class="col text-center">
@@ -169,8 +300,56 @@ if (!isset($_SESSION['user_id'])) {
             ]
         });
 
-        $('.dataTables_length').addClass('bs-select');
+        $('.dataTables_length').addClass('bs-select'); // ???
+
     });
+
+    function fillOwnerDogs() {
+        var selected_owner = $("#owner option:selected").val();
+        console.log("Selected owner: " + selected_owner);
+        if (!selected_owner) {
+            return;
+        }
+        $.post("fillDogs.php", {
+            selected_owner: selected_owner
+        }, function (data) {
+            console.log(data);
+            $("#dog").html(data);
+        });
+    }
+
+    $('#addForm').submit(function () {
+        event.preventDefault();
+        console.log("Adding");
+        const $form = $(this);
+        const $input = $form.find('select');
+
+        const serializedData = $form.serialize();
+        console.log(serializedData);
+
+        $input.prop('disabled', true);
+
+        request = $.ajax({
+            url: 'handler/add.php',
+            type: 'post',
+            data: serializedData
+        });
+
+        request.done(function (response) {
+            console.log(response);
+            if (response == "Success") {
+                console.log("Added appointment");
+                location.reload(true);
+            } else {
+                console.log("Appointment not added " + response);
+            }
+            console.log(response);
+        });
+
+        request.fail(function (jqXHR, textStatus, errorThrown) {
+            console.error("Error occurred: " + textStatus, errorThrown);
+        });
+    })
 
     function searchAppointmentByProperty() {
         let selectedProperty = $("#search-appointments-dropdown option:selected").text();

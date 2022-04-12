@@ -14,4 +14,25 @@ class Owner
         $this->lastname = $lastname;
         $this->phoneNumber = $phoneNumber;
     }
+
+    public static function getAll(mysqli $conn): ?array
+    {
+        $query = "SELECT * FROM owner";
+        $result = $conn->query($query);
+        if (!$result) {
+            echo "Error while retrieving data";
+            return null;
+        }
+        if ($result->num_rows == 0) {
+            echo "No owners currently";
+            return null;
+        } else {
+            $owners = array();
+            while ($row = $result->fetch_array()) {
+                $owner = new Owner($row["owner_id"], $row["first_name"], $row["last_name"], $row["phone_number"]);
+                array_push($owners, $owner);
+            }
+            return $owners;
+        }
+    }
 }

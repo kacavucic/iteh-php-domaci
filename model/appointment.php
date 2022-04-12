@@ -41,4 +41,14 @@ class Appointment
             return $appointments;
         }
     }
+    public static function add(Appointment $appointment, mysqli $conn)
+    {
+        $location_id = $appointment->location->id;
+        $dog_id = $appointment->dog->id;
+        $date_time = $appointment->date_time->format("Y-m-d H:i:s");
+        $query = "INSERT INTO appointment(date_time,dog_id,location_id) 
+        VALUES('$date_time',$dog_id, $location_id)";
+
+        return $conn->query($query);
+    }
 }

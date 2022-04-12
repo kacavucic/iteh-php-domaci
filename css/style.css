@@ -153,6 +153,14 @@ i {
     max-height: 400px;
 }
 
+.modal-header {
+    background-color: rgb(120, 33, 47);
+}
+
+.modal-body {
+    color: dimgrey;
+}
+
 .form-control {
     background-color: transparent;
 }
