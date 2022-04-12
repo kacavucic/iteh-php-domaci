@@ -302,6 +302,25 @@ if (!isset($_SESSION['user_id'])) {
 
         $('.dataTables_length').addClass('bs-select'); // ???
 
+        // DATE AND TIME
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        now.setSeconds(null);
+        now.setMilliseconds(null);
+
+        const max = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+        max.setMinutes(max.getMinutes() - max.getTimezoneOffset());
+        max.setMilliseconds(null);
+        max.setSeconds(null);
+
+        document.getElementById('appointmentTime').value = now.toISOString().slice(0, -1);
+
+        document.getElementById('appointmentTime').min = now.toISOString().slice(0, -1);
+        document.getElementById('appointmentTime').max = max.toISOString().slice(0, -1);
+
+        document.getElementById('appointmentTimeEdit').min = now.toISOString().slice(0, -1);
+        document.getElementById('appointmentTimeEdit').max = max.toISOString().slice(0, -1);
+        // DATE AND TIME
     });
 
     function fillOwnerDogs() {
