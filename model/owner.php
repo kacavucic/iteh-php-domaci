@@ -35,4 +35,16 @@ class Owner
             return $owners;
         }
     }
+
+    public static function getById($id, mysqli $conn): ?Owner
+    {
+        $query = "SELECT * FROM owner WHERE owner_id=$id";
+        $result = $conn->query($query);
+        if ($result) {
+            $row = $result->fetch_array(1);
+            return new Owner($row["owner_id"], $row["first_name"], $row["last_name"], $row["phone_number"]);
+        } else {
+            return null;
+        }
+    }
 }

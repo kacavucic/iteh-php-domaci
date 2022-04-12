@@ -58,4 +58,38 @@ class Appointment
         $query = "DELETE FROM appointment WHERE appointment_id=$this->id";
         return $conn->query($query);
     }
+
+    public static function getById($id, mysqli $conn): ?Appointment
+    {
+        $query = "SELECT * FROM appointment a JOIN dog d ON a.dog_id = d.dog_id 
+        JOIN owner o ON d.owner_id = o.owner_id 
+        JOIN location l ON a.location_id = l.location_id WHERE appointment_id=$id";
+
+        $result = $conn->query($query);
+        if ($result) {
+            $row = $result->fetch_array(1);
+            $owner = new Owner($row["owner_id"], $row["first_name"], $row["last_name"], $row["phone_number"]);
+            $dog = new Dog($row["dog_id"], $owner, $row["breed"]);
+            $location = new Location($row["location_id"], $row["city"], $row["address"]);
+            $date_time = new DateTime($row["date_time"]);
+            return new Appointment($row["appointment_id"], $date_time, $dog, $location);
+        } else {
+            return null;
+        }
+    }
+
+    public static function update(Appointment $appointment, mysqli $conn)
+    {
+        $location_id = $appointment->location->id;
+        $dog_id = $appointment->dog->id;
+        $date_time = $appointment->date_time->format("Y-m-d H:i:s");
+
+        $query = "UPDATE appointment SET 
+        date_time = ' $date_time',
+        dog_id = $dog_id,
+        location_id = $location_id
+        WHERE appointment_id=$appointment->id";
+
+        return $conn->query($query);
+    }
 }

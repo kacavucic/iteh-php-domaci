@@ -351,6 +351,97 @@ if (!isset($_SESSION['user_id'])) {
         });
     })
 
+    $(".edit-appointment").click(function () {
+        var id = $(this).val();
+        console.log("Filling edit form");
+        console.log(id);
+
+        request = $.ajax({
+            url: 'handler/get.php',
+            type: 'post',
+            data: {'id': id},
+            dataType: 'json'
+        });
+
+        function fillDogs(owner_id, dog_id) {
+            var selected_owner = owner_id;
+            console.log("Selected owner: " + selected_owner);
+            if (!selected_owner) {
+                return;
+            }
+            $.post("fillDogs.php", {
+                selected_owner: selected_owner,
+                selected_dog: dog_id
+            }, function (data) {
+                console.log(data);
+                $("#dogEdit").html(data);
+            });
+        }
+
+        request.done(function (response) {
+            console.log('Form filled');
+            console.log(response);
+
+            $('#idEdit').val(response.id);
+            $('#locationEdit').val(response.location.id);
+            $('#ownerEdit').val(response.dog.owner.id);
+            fillDogs(response.dog.owner.id, response.dog.id);
+
+            const date = new Date(response.date_time.date);
+            date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+            date.setSeconds(null);
+            date.setMilliseconds(null);
+
+            document.getElementById('appointmentTimeEdit').value = date.toISOString().slice(0, -1);
+        });
+
+        request.fail(function (jqXHR, textStatus, errorThrown) {
+            console.error('The following error occurred: ' + textStatus, errorThrown);
+        });
+    });
+
+    function fillOwnerDogsEdit() {
+        var selected_owner_edit = $("#ownerEdit option:selected").val();
+        console.log("Selected owner edit: " + selected_owner_edit);
+        if (!selected_owner_edit) {
+            return;
+        }
+        $.post("fillDogs.php", {
+            selected_owner: selected_owner_edit
+        }, function (data) {
+            console.log(data);
+            $("#dogEdit").html(data);
+        });
+    }
+
+    $('#editForm').submit(function () {
+        event.preventDefault();
+        console.log("Editing");
+        const $form = $(this);
+        const $inputs = $form.find('input,select');
+        const serializedData = $form.serialize();
+        console.log(serializedData);
+        $inputs.prop('disabled', true);
+
+        request = $.ajax({
+            url: 'handler/edit.php',
+            type: 'post',
+            data: serializedData
+        });
+
+        request.done(function (response) {
+            if (response === 'Success') {
+                console.log('Appointment edited');
+                location.reload(true);
+            } else console.log('Appointment not edited ' + response);
+            console.log(response);
+        });
+
+        request.fail(function (jqXHR, textStatus, errorThrown) {
+            console.error('The following error occurred: ' + textStatus, errorThrown);
+        });
+    });
+
     $(".delete-appointment").click(function () {
         var id = $(this).val();
         console.log("Deleting appointment with ID: " + id);
